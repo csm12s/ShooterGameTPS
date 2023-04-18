@@ -28,8 +28,8 @@ void AShooterPlayerCameraManager::UpdateCamera(float DeltaTime)
 
 	Super::UpdateCamera(DeltaTime);
 
-	if (MyPawn && MyPawn->IsFirstPerson())
+	/*if (MyPawn && MyPawn->IsFirstPerson())
 	{
 		MyPawn->OnCameraUpdate(GetCameraLocation(), GetCameraRotation());
-	}
+	}*/
 }

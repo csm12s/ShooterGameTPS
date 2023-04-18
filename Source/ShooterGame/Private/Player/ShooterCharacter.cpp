@@ -50,7 +50,7 @@ AShooterCharacter::AShooterCharacter(const FObjectInitializer& ObjectInitializer
 	FirstPersonCamera->bUsePawnControlRotation = true;
 	// camera1p - mesh 1p
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(FName("PawnMesh1P"));
-	Mesh1P->SetupAttachment(GetCapsuleComponent());
+	Mesh1P->SetupAttachment(FirstPersonCamera); //GetCapsuleComponent()
 	Mesh1P->bOnlyOwnerSee = true;
 	Mesh1P->bOwnerNoSee = false;
 	Mesh1P->bCastDynamicShadow = false;
@@ -1105,12 +1105,14 @@ void AShooterCharacter::Tick(float DeltaSeconds)
 	{
 		SetSprinting(false, false);
 	}
+
+	// health regen
 	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(Controller);
 	if (MyPC && MyPC->HasHealthRegen())
 	{
 		if (this->Health < this->GetMaxHealth())
 		{
-			this->Health += 5 * DeltaSeconds;
+			this->Health += 25 * DeltaSeconds;
 			if (Health > this->GetMaxHealth())
 			{
 				Health = this->GetMaxHealth();
@@ -1120,6 +1122,7 @@ void AShooterCharacter::Tick(float DeltaSeconds)
 
 	if (GEngine->UseSound())
 	{
+		// low health sound
 		if (LowHealthSound)
 		{
 			if ((this->Health > 0 && this->Health < this->GetMaxHealth() * LowHealthPercentage) && (!LowHealthWarningPlayer || !LowHealthWarningPlayer->IsPlaying()))
@@ -1143,6 +1146,7 @@ void AShooterCharacter::Tick(float DeltaSeconds)
 			}
 		}
 
+		// todo ref
 		UpdateRunSounds();
 	}
 
@@ -1467,20 +1471,6 @@ void AShooterCharacter::OnCrouchToggle()
 
 
 #pragma region jump
-//void AShooterCharacter::OnStartJump()
-//{
-//	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(Controller);
-//	if (MyPC && MyPC->IsGameInputAllowed())
-//	{
-//		bPressedJump = true;
-//	}
-//}
-//
-//void AShooterCharacter::OnStopJump()
-//{
-//	bPressedJump = false;
-//	StopJumping();
-//}
 
 //todo del
 bool AShooterCharacter::IsInitiatedJump() const
