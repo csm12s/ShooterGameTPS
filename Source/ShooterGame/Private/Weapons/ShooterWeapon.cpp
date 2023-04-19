@@ -72,24 +72,11 @@ void AShooterWeapon::OnEquip(const AShooterWeapon* LastWeapon)
 
 	AttachMeshToPawn();
 
-	// Only play animation if last weapon is valid
-	if (LastWeapon)
-	{
-		float Duration = PlayWeaponAnimation(EquipAnim);
-		if (Duration <= 0.0f)
-		{
-			// failsafe
-			Duration = 0.5f;
-		}
-		EquipStartedTime = GetWorld()->GetTimeSeconds();
-		EquipDuration = Duration;
-
-		GetWorldTimerManager().SetTimer(TimerHandle_OnEquipFinished, this, &AShooterWeapon::OnEquipFinished, Duration, false);
-	}
-	else
-	{
-		OnEquipFinished();
-	}
+	// anim
+	float Duration = PlayWeaponAnimation(EquipAnim);
+	EquipStartedTime = GetWorld()->GetTimeSeconds();
+	EquipDuration = Duration;
+	GetWorldTimerManager().SetTimer(TimerHandle_OnEquipFinished, this, &AShooterWeapon::OnEquipFinished, Duration, false);
 
 	if (MyPawn && MyPawn->IsLocallyControlled())
 	{
@@ -123,20 +110,16 @@ void AShooterWeapon::OnUnEquip()
 	DetachMeshFromPawn();
 	bIsEquipped = false;
 
-	//if (bPendingReload)
-	{
-		StopWeaponAnimation(ReloadAnim);
+// stop reload
+	StopWeaponAnimation(ReloadAnim);
 
-		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
-		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
-	}
+	GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
+	GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
 
-	//if (bPendingEquip)
-	{
-		StopWeaponAnimation(EquipAnim);
+	// stop drawing
+	StopWeaponAnimation(EquipAnim);
 
-		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
-	}
+	GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 
 	AShooterCharacter::NotifyUnEquipWeapon.Broadcast(MyPawn, this);
 }
@@ -248,10 +231,6 @@ void AShooterWeapon::StopReload()
 }
 
 #pragma region StartFire
-/// <summary>
-/// TryShoot
-/// todo change name
-/// </summary>
 void AShooterWeapon::TryShoot()
 {
 	if (GetLocalRole() < ROLE_Authority)
@@ -274,12 +253,9 @@ void AShooterWeapon::ServerTryShoot_Implementation()
 #pragma endregion
 
 #pragma region fire
-/// <summary>
-/// HandleShoot
-/// </summary>
 void AShooterWeapon::HandleShoot()
 {
-	if ((AmmoInClip > 0 || HasInfiniteClip() || HasInfiniteAmmo())
+	if ((AmmoInClip > 0 || HasInfiniteClip() || HasInfiniteAmmo()) // todo ref: HasAmmo
 		&& CanFire())
 	{
 		StartFireTimer();
@@ -330,9 +306,7 @@ void AShooterWeapon::ServerHandleShoot_Implementation()
 
 	if (bShouldUpdateAmmo)
 	{
-		// update ammo
 		UseAmmo();
-
 	}
 }
 
@@ -400,11 +374,11 @@ bool AShooterWeapon::CanFire() const
 bool AShooterWeapon::CanReload() const
 {
 	bool bPawnCanReload = (!MyPawn || MyPawn->CanReload());
-	bool bGotAmmo = (AmmoInClip < WeaponConfig.AmmoPerClip)
-		&& (AmmoCarry > 0 || HasInfiniteClip());
+	bool bGotAmmo = (AmmoInClip < WeaponConfig.AmmoPerClip) // need ammo
+		&& (AmmoCarry > 0 || HasInfiniteClip()); // have carry ammo
 	
 	bool bStateOKToReload = CurrentState == EWeaponState::Idle
-		|| CurrentState == EWeaponState::Firing;
+		|| CurrentState == EWeaponState::Firing; // todo delete?
 
 	return ((bPawnCanReload == true)
 		&& (bGotAmmo == true)
@@ -495,10 +469,9 @@ void AShooterWeapon::ReloadWeapon()
 
 void AShooterWeapon::SetWeaponState(EWeaponState::Type NewState)
 {
-	const EWeaponState::Type PrevState = CurrentState;
+	//const EWeaponState::Type PrevState = CurrentState;
 
 	CurrentState = NewState;
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -626,6 +599,7 @@ FVector AShooterWeapon::GetMuzzleDirection() const
 	return UseMesh->GetSocketRotation(MuzzleAttachPoint).Vector();
 }
 
+// todo add projectile
 FHitResult AShooterWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
 {
 
@@ -699,7 +673,7 @@ void AShooterWeapon::SimulateWeaponFire()
 		}
 	}
 
-	PlayWeaponAnimation(FireAnim);
+	PlayWeaponAnimation(FireAnim); // todo add asset
 	PlayWeaponSound(FireSound);
 
 	AShooterPlayerController* PC = (MyPawn != NULL) ? Cast<AShooterPlayerController>(MyPawn->Controller) : NULL;
@@ -709,7 +683,6 @@ void AShooterWeapon::SimulateWeaponFire()
 		{
 			PC->ClientStartCameraShake(FireCameraShake, 1);
 		}
-
 	}
 }
 
@@ -759,14 +732,14 @@ EWeaponState::Type AShooterWeapon::GetCurrentState() const
 	return CurrentState;
 }
 
-int32 AShooterWeapon::GetCurrentAmmo() const
-{
-	return AmmoCarry;
-}
-
 int32 AShooterWeapon::GetCurrentAmmoInClip() const
 {
 	return AmmoInClip;
+}
+
+int32 AShooterWeapon::GetCurrentAmmo() const
+{
+	return AmmoCarry;
 }
 
 int32 AShooterWeapon::GetAmmoPerClip() const

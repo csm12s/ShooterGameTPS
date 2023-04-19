@@ -1270,6 +1270,7 @@ USkeletalMeshComponent* AShooterCharacter::GetPawnMesh() const
 	return IsFirstPerson() ? Mesh1P : GetMesh();
 }
 
+// todo ref
 USkeletalMeshComponent* AShooterCharacter::GetSpecifcPawnMesh(bool WantFirstPerson) const
 {
 	return WantFirstPerson == true ? Mesh1P : GetMesh();

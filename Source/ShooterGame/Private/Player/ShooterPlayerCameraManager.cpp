@@ -28,6 +28,7 @@ void AShooterPlayerCameraManager::UpdateCamera(float DeltaTime)
 
 	Super::UpdateCamera(DeltaTime);
 
+	// pawn mesh1p is now child of camera1p
 	/*if (MyPawn && MyPawn->IsFirstPerson())
 	{
 		MyPawn->OnCameraUpdate(GetCameraLocation(), GetCameraRotation());
